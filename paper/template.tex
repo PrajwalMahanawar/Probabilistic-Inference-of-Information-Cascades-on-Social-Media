@@ -1,0 +1,477 @@
+\documentclass{article}
+
+\usepackage{arxiv}
+\usepackage{float}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{doi}
+\usepackage{multirow}
+
+\title{Probabilistic Inference of Information Cascades on Social Media through Independent Cascade Simulations and Reconstruction on Erd\H{o}s--R\'enyi Networks}
+
+\author{
+Prajwal Mahanawar \\
+MSc in Data Science and Statistical Learning \\
+Department of Mathematics and Statistics \\
+University of Limerick \\
+Limerick, Ireland \\
+\texttt{p.s.mahanawar2002@gmail.com}
+}
+\renewcommand{\undertitle}{}
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+Information diffusion on social media platforms has become a central topic in network science due to its relevance in viral marketing, misinformation spread, political mobilisation, and online behavioural dynamics. Despite the large availability of resharing data on platforms such as Twitter and Facebook, the true propagation pathways of information cascades are rarely observable directly.
+
+This study investigates probabilistic inference of information cascades by combining forward diffusion simulations with inverse cascade reconstruction techniques. We simulate synthetic information diffusion processes inspired by social media propagation dynamics on Erd\H{o}s--R\'enyi (ER) random graphs using the Independent Cascade Model (ICM) to analyse cascade dynamics under varying activation probabilities and network densities.
+
+Monte Carlo simulations are used to generate synthetic diffusion processes where the true cascade structure is known. Using these simulated cascades, we evaluate a deterministic single-parent reconstruction approach inspired by Goel et al. (2016), where parent-child relationships are inferred using temporal ordering and neighborhood constraints.
+
+Experimental results show that cascade size distributions are highly skewed, with most cascades remaining small while only a minority become viral. Structural virality measurements indicate that diffusion patterns are predominantly shallow and broadcast-like under subcritical spreading conditions. Furthermore, reconstructed cascades preserve key macro-level properties such as cascade size, average depth, and virality distributions with reasonable accuracy.
+
+The work provides a reproducible baseline framework for studying information diffusion and evaluating cascade reconstruction methods under controlled network environments. The findings contribute toward better understanding probabilistic diffusion inference in large-scale social networks.
+
+\end{abstract}
+
+\keywords{
+Information Diffusion \and
+Independent Cascade Model \and
+Cascade Reconstruction \and
+Structural Virality \and
+Social Networks \and
+Erd\H{o}s--R\'enyi Networks \and
+Monte Carlo Simulation
+}
+
+\section{Introduction}
+
+Social media platforms such as Twitter, Facebook, Instagram, and TikTok have transformed the way information propagates through society. Content can spread rapidly across highly connected user networks, often reaching millions of users within a short period of time. This process creates information cascades, where users adopt, share or retransmit information influenced by prior activations in the network.
+
+Understanding how information spreads is important for several applications including misinformation detection, viral marketing, political communication, recommendation systems, and public health awareness campaigns. While modern social platforms provide timestamps and interaction records, the underlying diffusion pathways that explain who influenced whom are typically hidden.
+
+This paper investigates probabilistic inference of information cascades using synthetic diffusion simulations and reconstruction methods. We combine forward simulation using the Independent Cascade Model (ICM) with inverse reconstruction of diffusion trees to evaluate how accurately hidden cascade structures can be recovered.
+
+The study focuses on three primary research objectives:
+
+\begin{itemize}
+    \item Simulate information diffusion using the Independent Cascade Model on Erd\H{o}s--R\'enyi random networks.
+    \item Analyse cascade properties such as size, depth, and structural virality.
+    \item Evaluate the accuracy of cascade reconstruction using temporal and structural constraints.
+\end{itemize}
+
+The contribution of this work is twofold:
+
+\begin{enumerate}
+    \item A reproducible simulation framework for studying probabilistic diffusion dynamics.
+    \item A quantitative comparison between true and reconstructed cascades using structural metrics.
+\end{enumerate}
+
+\section{Related Work}
+
+The study of information cascades has emerged as a major research area within network science, computational social science, and information diffusion modelling. Information cascades describe processes in which users adopt or propagate information influenced by prior activations in a network. Early theoretical foundations were established by Bikhchandani et al. \citep{bikhchandani1992theory}, who introduced the concept of informational cascades to explain collective behaviour, herd dynamics, and mass adoption processes.
+
+A major line of research focuses on generative diffusion models that simulate how information spreads across networks. Among these, the Independent Cascade Model (ICM) introduced by Kempe et al. \citep{kempe2003maximizing} remains one of the most widely used probabilistic diffusion frameworks. In the ICM, each activated node receives a single opportunity to activate its inactive neighbours with a predefined transmission probability. The simplicity and analytical tractability of the model have made it a standard baseline for studying viral propagation, influence maximisation, and cascade dynamics. Alternative approaches such as the Linear Threshold Model (LTM) \citep{kempe2003maximizing} and epidemic-inspired models including Susceptible--Infected--Recovered (SIR) processes have also been widely studied to model social contagion and behavioural adoption.
+
+Empirical studies of online diffusion have demonstrated that large viral cascades are statistically rare. Goel et al. \citep{goel2012structure} analysed large-scale online cascades and showed that the majority of diffusion events terminate quickly with only a small fraction achieving substantial spread. Extending this work, Goel et al. \citep{goel2016structural} introduced the concept of structural virality, a metric designed to distinguish broadcast-like diffusion from multi-generational viral branching. Their work highlighted that cascades with similar final sizes may possess substantially different structural characteristics.
+
+Another important research direction concerns cascade prediction and reconstruction. Cheng et al. \citep{cheng2014can} investigated whether early cascade characteristics can predict future popularity, demonstrating that temporal and structural features provide partial predictive power for cascade growth. However, they also observed that virality remains inherently difficult to forecast due to strong stochastic effects.
+
+The reconstruction of hidden diffusion pathways from partial observations has also received considerable attention. Myers and Leskovec \citep{myers2014information} studied latent influence structures in social networks, while Rodriguez et al. \citep{rodriguez2011uncovering} proposed probabilistic methods for inferring diffusion networks using continuous-time models. In contrast to probabilistic optimisation approaches, Goel et al. \citep{goel2016structural} proposed a deterministic reconstruction framework where parent-child relationships are inferred using temporal ordering and network constraints. Due to its computational efficiency and interpretability, this approach provides a practical baseline for large-scale cascade reconstruction.
+
+Recent work has further examined the limitations of diffusion assumptions. DeVerna et al. \citep{deverna2024information} demonstrated that reconstruction assumptions can significantly affect inferred cascade structures and estimates of user influence. Their findings emphasise the importance of carefully evaluating reconstruction methodologies when studying information propagation dynamics.
+
+Motivated by these prior studies, this work combines forward diffusion simulation with inverse cascade reconstruction under controlled synthetic conditions. Using Independent Cascade simulations on Erd\H{o}s--R\'enyi random graphs, we evaluate how effectively deterministic reconstruction methods preserve macro-level cascade properties such as size, depth, and structural virality.
+\section{Methodology}
+
+This study investigates probabilistic information diffusion through a combination of forward cascade simulation and inverse cascade reconstruction. Synthetic diffusion processes are generated using the Independent Cascade Model (ICM) on Erd\H{o}s--R\'enyi (ER) random networks. Since the true cascade structure is known in simulation, reconstructed cascades can be quantitatively compared against the ground truth using structural diffusion metrics.
+
+\subsection{Network Generation}
+
+Synthetic social networks are generated using the Erd\H{o}s--R\'enyi random graph model $G(n,p)$, where:
+
+\begin{itemize}
+    \item $n$ denotes the number of nodes in the network
+    \item $p$ denotes the probability of edge creation between any pair of nodes
+\end{itemize}
+
+In the ER model, edges are generated independently with probability $p$, producing sparse random networks with approximately binomial degree distributions. The expected average degree of the network is:
+
+\[
+\bar{k} = p(n-1)
+\]
+
+ER networks provide a mathematically tractable baseline for studying diffusion dynamics under controlled structural conditions. Although real social networks often exhibit heavy-tailed degree distributions and community structure, ER graphs are useful for isolating the effects of probabilistic diffusion mechanisms without additional topological complexity \citep{watts2002simple}.
+
+\subsection{Independent Cascade Model}
+
+Information diffusion is simulated using the Independent Cascade Model (ICM) introduced by \citet{kempe2003maximizing}, a discrete-time probabilistic contagion framework widely used in network diffusion studies.
+
+At time $t=0$, an initial seed node is activated. During each subsequent timestep, nodes activated at time $t-1$ are given a single opportunity to activate each inactive neighbor independently with transmission probability $\kappa$.
+
+Formally, for an edge $(u,v)$:
+
+\[
+P(u \rightarrow v) = \kappa
+\]
+
+where $\kappa \in [0,1]$ represents the activation probability.
+
+The diffusion process evolves according to the following rules:
+
+\begin{itemize}
+    \item Each newly activated node attempts to activate all inactive neighbors.
+    \item Activation attempts occur independently.
+    \item Each edge is used at most once during the diffusion process.
+    \item Once activated, nodes remain active for the remainder of the cascade.
+\end{itemize}
+
+The cascade terminates when no additional activations occur.
+
+Monte Carlo simulations are repeated across multiple network realizations and activation probabilities to analyse cascade behaviour under varying diffusion conditions. The ICM framework has been widely adopted in studies of information propagation, influence maximisation, and viral diffusion modelling \citep{kempe2003maximizing,liu2025thorough}.
+
+\subsection{Cascade Reconstruction}
+
+To infer hidden diffusion pathways, we adopt a deterministic single-parent reconstruction strategy inspired by \citet{goel2016structural}.
+
+Given activation timestamps and network connectivity information, each activated node is assigned a parent node from the previous generation of activated nodes. For a node $v$, the candidate parent set is defined as:
+
+\[
+C(v) = \{u \mid u \in N(v) \cap A_{g-1}\}
+\]
+
+where:
+
+\begin{itemize}
+    \item $N(v)$ denotes the neighborhood of node $v$
+    \item $A_{g-1}$ represents nodes activated during the previous generation
+\end{itemize}
+
+Among all eligible candidate parents, the inferred parent is selected according to temporal ordering, choosing the most recent valid activation preceding node $v$.
+
+This reconstruction procedure produces a directed cascade tree approximating the hidden propagation structure underlying the observed activation sequence. Similar reconstruction approaches have been used in prior studies of online diffusion and network inference \citep{goel2016structural,gomez2012inferring,braunstein2019network}.
+
+\subsection{Evaluation Metrics}
+
+To evaluate diffusion dynamics and reconstruction quality, cascades are analysed using several structural metrics:
+
+\begin{itemize}
+    \item Cascade Size
+    \item Maximum Cascade Depth
+    \item Average Cascade Depth
+    \item Structural Virality
+\end{itemize}
+
+Cascade size measures the total number of activated nodes within a diffusion process. Depth-based metrics quantify how far information propagates from the initial seed node.
+
+Structural virality is measured using the Wiener index formulation proposed by \citet{goel2016structural}:
+
+\[
+SV(T) = \frac{1}{n(n-1)} \sum_{i \neq j} d(i,j)
+\]
+
+where:
+
+\begin{itemize}
+    \item $T$ denotes the cascade tree
+    \item $n$ represents the number of nodes in the cascade
+    \item $d(i,j)$ is the shortest path distance between nodes $i$ and $j$
+\end{itemize}
+
+Low structural virality values indicate broadcast-like diffusion patterns, whereas larger values correspond to deeper multi-generational propagation structures.
+\section{Simulation Experiments}
+
+To analyse probabilistic diffusion dynamics and evaluate cascade reconstruction performance, multiple Monte Carlo simulation experiments were conducted under varying network and diffusion configurations.
+
+The experiments systematically varied:
+
+\begin{itemize}
+    \item Network size $(n)$
+    \item Edge creation probability $(p)$
+    \item Activation probability $(\kappa)$
+    \item Maximum diffusion timesteps
+\end{itemize}
+
+For each parameter configuration, multiple independent simulation runs were performed in order to capture the stochastic variability inherent in diffusion processes.
+
+The simulation framework was designed to investigate both local activation behaviour and large-scale cascade structure across synthetic networks. The experiments included:
+
+\begin{enumerate}
+    \item \textbf{Ring Network Activation Analysis} \\
+    Small ring-network simulations were conducted to validate activation dynamics and visualise local diffusion behaviour under controlled topological conditions.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{test1possibleactivations.png}
+    \caption{shows the possible activation paths from the seed node. Due to the ring topology, influence spreads symmetrically in both directions, and the maximum possible cascade size equals the network size. The plot visually highlights the deterministic path constraints imposed by the ring structure any failure in activation along one direction effectively blocks further spread in that path, explaining why cascades often terminate early.}
+    \label{fig:ring_activation}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\textwidth]{test1ringnetworkformed.png}
+    \caption{Initial ring network topology used for validating local diffusion behaviour.}
+    \label{fig:ring_network}
+\end{figure}
+
+    \item \textbf{Cascade Size Distribution Analysis} \\
+    Monte Carlo simulations were used to examine the distribution of cascade sizes under varying activation probabilities and network densities.
+
+The network size was increased to $n=100$ nodes to observe greater variability. The ICM was simulated for $u=500$ Monte Carlo runs.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{test2cascadedist.png}
+    \caption{Cascade size distribution for a 100-node ring network under ICM ($p_{act} = 0.1$, $u=500$). It plots the cascade size distribution on a log–log scale. The slope of the line indicates a heavy-tailed distribution small cascades are very common, while large cascades are rare. This pattern results from the low activation probability, which means that most activation chains die out quickly. The log–log straight-line decay is a signature of subcritical spreading regimes (i.e. Branching ratio $<$ 1 (subcritical)).}
+    \label{fig:cascade_dist}
+\end{figure}
+
+
+
+    \item \textbf{Effect of Maximum Timesteps} \\
+    The influence of diffusion duration constraints on cascade growth and propagation depth was investigated by varying the maximum number of simulation steps.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{test3cascadedistwithmaxstepsize.png}
+    \caption{Cascade size distribution (log–log) with $\text{max\_steps} = 2000$ in a 100-node ring network ($p_{act} = 0.1$, $u=10,000$) shows that, despite the large step limit, cascades remain small for most runs, reinforcing the idea that low $p_{act}$ limits spread more than temporal constraints. The larger sample size produces a smoother heavy-tailed distribution, confirming exponential behaviour in cascade sizes under subcritical conditions (i.e. Branching ratio $<$ 1 (subcritical)).}
+    \label{fig:max_steps}
+\end{figure}
+
+  
+
+
+    \item \textbf{Cascade Size Behaviour under Different Activation Probabilities} \\
+    Diffusion behaviour was analysed under varying activation probabilities to evaluate how transmission likelihood affects cascade growth.
+
+    The focus shifts to Erdős–Rényi (ER) random graphs with $n = 100$ nodes and varying edge probability $p \in \{0.01, 0.03, 0.05, 0.1\}$. For each $p$, $u=500$ Monte Carlo simulations were run.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{test5cascadedistwithdiffpvlues.png}
+    \caption{Cascade size distributions for different activation probabilities $p$ visualised on a log-log scale. 
+    It compares cascade size distributions for different network densities. At low connectivity ($p = 0.01$), cascades almost always remain small, rarely exceeding the immediate neighbourhood of the seed. As $p$ increases, the tail of the distribution extends further, indicating a higher chance of large cascades due to increased alternative activation paths. The curves reveal a transition from sparse-network containment to more frequent, wide-reaching spreads as $p$ grows.
+}
+    \label{fig:diff_p_values}
+\end{figure}
+
+    \item \textbf{Cascade Tree Visualisation} \\
+   Cascade tree visualisations provide insight into the generational structure of spreading events.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\textwidth]{test6.png}
+\caption{Example cascade tree with generation-based colouring.}
+\label{fig:cascade_tree}
+\end{figure}
+    \begin{itemize}
+        \item Red: Generation 1 (directly activated by the seed)
+        \item Green: Generation 2
+        \item Blue: Generation 3+
+    \end{itemize}
+    
+The tree reveals uneven branching some branches terminate after a single activation, while others continue for several generations. This reflects the stochastic nature of ICM and the role of local connectivity in sustaining propagation.\\
+
+
+    \item \textbf{Cascade Reconstruction Approach}\\
+To evaluate reconstruction performance, synthetic cascades were generated using the Independent Cascade Model (ICM) on an Erdős–Rényi network $G(n,p)$. The network parameters were set to $n = 1000$ nodes, edge probability $p = 0.1$, and activation probability $p_{\text{act}} = 0.01$. A total of $M = 1000$ cascade simulations were performed using \texttt{run\_cascade\_sim\_tree\_ICM}, each starting from a single seed node.
+
+Only cascades with at least 10 activated nodes were retained for reconstruction, to avoid trivial cases.
+
+The reconstruction proceeds as follows:
+\begin{enumerate}
+    \item \textbf{Initialization:} Add the seed node $(g=0)$ explicitly.
+    \item \textbf{Sorting:} Order all activations by generation so that parents are always processed before children.
+    \item \textbf{Parent Selection:} For each $v$ in $g>0$, compute $C(v)$ and select the first available node in $C(v)$ as the parent.
+    \item \textbf{Edge Recording:} Store $(u, v, g, \texttt{sim\_id})$ in the reconstructed edge list.
+\end{enumerate}
+\vspace{0.5cm}
+After simulating $M = 1000$ independent cascades on an Erd\H{o}s–R\'enyi graph $G \sim \mathcal{G}(n=1000, p=0.1)$, cascades with a minimum size threshold of $n \geq 10$ activated nodes were selected for reconstruction. This filtering step yielded $233$ cascades, each represented by a unique simulation ID (\texttt{sim\_id}). The number of activations per cascade varied significantly, ranging from the threshold of $10$ nodes to as large as $188$ nodes, as illustrated in Table~\ref{tab:large_cascades_example}.
+
+\begin{table}[H]
+\centering
+\caption{Example of cascades exceeding the size threshold ($n \geq 10$).}
+\label{tab:large_cascades_example}
+\begin{tabular}{c c}
+\hline
+\textbf{sim\_id} & \textbf{Cascade Size $n$} \\
+\hline
+2 & 47 \\
+5 & 24 \\
+11 & 12 \\
+23 & 188 \\
+26 & 154 \\
+32 & 99 \\
+36 & 129 \\
+\hline
+\end{tabular}
+\end{table}
+
+From this set, a specific cascade (\texttt{sim\_id = 32}) was extracted for detailed analysis. The extraction kept only the \texttt{child}, \texttt{generation}, and \texttt{sim\_id} columns, resulting in the activation list shown in Table~\ref{tab:selected_cascade}.  
+
+\begin{table}[H]
+\centering
+\caption{Activation sequence for \texttt{sim\_id = 32} before reconstruction.}
+\label{tab:selected_cascade}
+\begin{tabular}{c c c}
+\hline
+\textbf{Child} & \textbf{Generation $g$} & \textbf{sim\_id} \\
+\hline
+565 & 1 & 32 \\
+609 & 1 & 32 \\
+868 & 1 & 32 \\
+964 & 2 & 32 \\
+502 & 2 & 32 \\
+966 & 2 & 32 \\
+634 & 2 & 32 \\
+827 & 2 & 32 \\
+943 & 2 & 32 \\
+121 & 3 & 32 \\
+\vdots & \vdots & \vdots \\
+\hline
+\end{tabular}
+\end{table}
+
+Before reconstruction, the seed node for this cascade (generation $g = 0$) was explicitly added at the top of the list to ensure the root is preserved.  
+
+An excerpt from the reconstructed cascade for \texttt{sim\_id = 32} is shown in Table~\ref{tab:reconstructed_example}:
+\begin{table}[H]
+\centering
+\caption{Excerpt from reconstructed cascade for \texttt{sim\_id = 32}.}
+\label{tab:reconstructed_example}
+\begin{tabular}{c c c c}
+\hline
+\textbf{Parent} & \textbf{Child} & \textbf{Generation $g$} & \textbf{sim\_id} \\
+\hline
+1 & 565 & 1 & 32 \\
+1 & 609 & 1 & 32 \\
+1 & 868 & 1 & 32 \\
+565 & 964 & 2 & 32 \\
+609 & 502 & 2 & 32 \\
+609 & 966 & 2 & 32 \\
+868 & 634 & 2 & 32 \\
+868 & 827 & 2 & 32 \\
+868 & 943 & 2 & 32 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{test7simid=32.png}
+\caption{Reconstructed cascade for sim-id = 32.}
+\label{fig:sim32}
+\end{figure}
+
+\textbf{Figure \ref{fig:sim32}} shows the reconstructed cascade corresponding to \texttt{sim\_id = 32}, consisting of 99 activated nodes. The cascade begins from a single seed node and expands through multiple branching generations. The structure shows mix of bushy branching and deep chains, showing both broadcast-style spread and multi-step chains. The reconstruction algorithm successfully captures the layered propagation pattern. 
+
+\section{Results}
+
+The simulation experiments reveal that cascade size distributions are highly skewed across all tested network configurations. The majority of cascades terminate after only a small number of activations, while a relatively small fraction of cascades achieve large-scale propagation. This behaviour is consistent with prior studies of online information diffusion, where viral cascades are statistically rare \citep{goel2012structure,vosoughi2018spread}.
+
+Increasing the activation probability $\kappa$ consistently produced larger average cascade sizes and deeper diffusion structures. Higher transmission probabilities increased the likelihood of successful neighbor activations, thereby allowing cascades to propagate further through the network. Similarly, denser Erd\H{o}s--R\'enyi networks facilitated broader diffusion by providing a larger number of available transmission paths between nodes.
+
+Across subcritical diffusion settings, structural virality values remained relatively low, indicating that most cascades exhibited shallow and broadcast-like propagation patterns rather than deep multi-generational branching structures. Only under higher activation probabilities and increased network connectivity did cascades display more pronounced viral branching behaviour. These observations are consistent with branching-process interpretations of online diffusion dynamics \citep{gleeson2020branching,iribarren2011branching}.
+
+The cascade reconstruction framework was able to preserve several important macro-level structural properties of the original diffusion processes. In particular, reconstructed cascades showed strong agreement with ground-truth cascades in terms of:
+
+\begin{itemize}
+    \item Cascade size distributions
+ \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{test7truevsrcdist.png}
+    \caption{True versus reconstructed cascade size distributions visualised on a log-log scale.}
+    \label{fig:true_vs_reconstructed}
+\end{figure}
+
+    \item Average cascade depth
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{test7truevsrcavgdepth.png}
+    \caption{Comparison of mean cascade depth distributions between true and reconstructed cascades.}
+    \label{fig:depth_distribution}
+\end{figure}
+
+
+
+    \item Structural virality trends
+
+     
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{test7truevsrcsv.png}
+    \caption{Comparison of structural virality distributions between true and reconstructed cascades.}
+    \label{fig:sv_comparison}
+\end{figure}
+
+\end{itemize}
+
+These findings suggest that deterministic reconstruction methods based on temporal ordering and neighborhood constraints can capture important global characteristics of diffusion processes, even when exact propagation pathways remain partially ambiguous \citep{goel2016structural}.
+
+However, reconstruction accuracy decreased in denser networks where multiple neighboring nodes frequently satisfied the candidate parent conditions simultaneously. In such cases, the presence of several plausible parent nodes increased uncertainty in the inferred cascade structure, leading to greater divergence between reconstructed and true diffusion trees.
+
+Overall, the results demonstrate that probabilistic diffusion simulations combined with heuristic reconstruction methods provide a useful framework for analysing information cascade dynamics under controlled network conditions.
+\section{Discussion}
+
+The findings of this study are consistent with prior research demonstrating that information cascades in online systems are highly imbalanced, with most diffusion events remaining small while only a minority achieve widespread propagation \citep{goel2012structure,vosoughi2018spread}. This heavy-tailed behaviour has been widely observed in empirical studies of online information diffusion and reflects the inherently stochastic nature of cascade growth.
+
+The simulation results further highlight the importance of both transmission probability and network connectivity in determining diffusion outcomes. Higher activation probabilities increase the likelihood of successful propagation events, while denser network structures provide additional transmission pathways that facilitate broader cascade expansion. These observations are consistent with theoretical expectations from probabilistic contagion models and branching-process interpretations of diffusion dynamics \citep{watts2002simple,gleeson2020branching}.
+
+The Independent Cascade Model (ICM) proved to be an effective baseline framework for studying synthetic information diffusion due to its:
+
+\begin{itemize}
+    \item Simplicity
+    \item Interpretability
+    \item Mathematical tractability
+    \item Computational efficiency
+\end{itemize}
+
+The discrete-time formulation of the ICM also aligns naturally with online resharing behaviour, where users typically receive a limited opportunity to influence their neighbours through reposts, mentions, or shares \citep{kempe2003maximizing}.
+
+At the same time, the experiments illustrate several limitations of deterministic cascade reconstruction approaches. While the reconstruction framework successfully preserved important macro-level structural properties such as cascade size distributions and structural virality trends, exact parent-child inference becomes increasingly difficult in dense networks where multiple candidate parents may satisfy temporal and neighborhood constraints simultaneously.
+
+Moreover, real-world information diffusion processes are often substantially more complex than the assumptions imposed by the Independent Cascade framework. Social media propagation may involve repeated exposures, external information sources, heterogeneous influence strengths, algorithmic recommendation systems, and temporal user behaviour patterns that are not captured by simple probabilistic contagion models \citep{deverna2024information,cheng2014can}.
+
+Consequently, the present work should be viewed primarily as a controlled baseline study for understanding diffusion inference under idealised conditions. Nevertheless, the framework provides a useful foundation for evaluating reconstruction methodologies and analysing how structural network properties influence probabilistic information spread.
+
+Future work may extend this framework using more realistic network topologies, temporal diffusion models such as Hawkes processes \citep{kong2020modeling}, or graph neural network approaches capable of learning latent propagation dynamics directly from cascade data.
+\section{Limitations}
+
+This study relies on synthetic Erd\H{o}s--R\'enyi random networks and simplified diffusion assumptions under the Independent Cascade Model. Real-world social networks exhibit additional structural and temporal complexities, including community structure, repeated exposures, heterogeneous influence strengths, and platform-driven recommendation mechanisms. Consequently, the present findings should be interpreted primarily as a controlled baseline analysis rather than a direct representation of real-world social media diffusion.
+
+\section{Conclusion}
+
+This paper presented a probabilistic framework for analysing and reconstructing information cascades using synthetic diffusion simulations on Erd\H{o}s--R\'enyi random networks.
+
+By combining Independent Cascade Model (ICM) simulations with deterministic cascade reconstruction techniques, the study investigated how probabilistic diffusion dynamics evolve under varying network structures and transmission conditions. Monte Carlo experiments demonstrated that cascade size distributions are highly skewed, with most cascades remaining small while only a limited number achieve large-scale propagation.
+
+The results further showed that reconstructed cascades preserve several important macro-level structural properties of the original diffusion processes, including cascade size distributions, average depth characteristics, and structural virality trends. These findings suggest that heuristic reconstruction methods based on temporal ordering and network connectivity can provide useful approximations of hidden propagation structures under controlled diffusion settings.
+
+The work contributes a reproducible baseline framework for studying information diffusion, cascade reconstruction, and structural virality in probabilistic network environments. Although the present study focuses on synthetic Erd\H{o}s--R\'enyi networks and simplified diffusion assumptions, the framework establishes a foundation for evaluating more advanced diffusion inference methodologies.
+
+Future work may extend this research through the incorporation of:
+
+\begin{itemize}
+    \item Hawkes Process based temporal diffusion models
+    \item Temporal Graph Neural Networks
+    \item Real-world Twitter/X diffusion datasets
+    \item Cascade-aware recommendation systems
+    \item Hybrid probabilistic diffusion frameworks integrating Independent Cascade, Linear Threshold, and temporal intensity models
+\end{itemize}
+
+Such extensions would enable the study of more realistic social diffusion dynamics and improve the modelling of complex information propagation processes in large-scale online networks.
+
+\bibliographystyle{unsrtnat}
+\bibliography{references}
+
+\end{document}
