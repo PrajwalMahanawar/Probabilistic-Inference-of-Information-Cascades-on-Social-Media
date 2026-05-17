@@ -1,8 +1,7 @@
 # 🧠 Probabilistic Inference of Information Cascades on Social Media
 
 **Author:** Prajwal Mahanawar  
-**Institution:** University of Limerick  
-**Supervisor:** Dr. David O’Sullivan  
+**Institution:** University of Limerick    
 **Degree:** MSc in Data Science and Statistical Learning (2025)  
 
 ---
