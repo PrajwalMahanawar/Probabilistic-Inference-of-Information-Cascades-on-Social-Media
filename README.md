@@ -62,37 +62,37 @@ The goal is to assess how accurately reconstructed cascades capture the true dif
 
 ### 🧩 Simulation 1 – Possible Activations in a Ring Network
 Illustrates the sequential node activations in a 6-node ring graph.
-![Simulation 1 – Possible Activations](test1possibleactivations.png)
+![Simulation 1 – Possible Activations](output/test1possibleactivations.png)
 
 ### 🕸️ Ring Network Formation
 Base topology used for initial diffusion experiments.
-![Ring Network Formed](test1ringnetworkformed.png)
+![Ring Network Formed](output/test1ringnetworkformed.png)
 
 ### 📈 Simulation 2 – Cascade Size Distribution (Log-Log Scale)
 Shows exponential decay in cascade size frequencies on the ring network.
-![Cascade Size Distribution](test2cascadedist.png)
+![Cascade Size Distribution](output/test2cascadedist.png)
 
 ### ⏱️ Simulation 3 – Cascade Size Distribution (max_steps = 2000)
 Longer simulations smoothen heavy-tailed distribution trends.
-![Cascade Distribution with Max Steps](test3cascadedistwithmaxstepsize.png)
+![Cascade Distribution with Max Steps](output/test3cascadedistwithmaxstepsize.png)
 
 ### 🔴 Simulation 4 – Cascade Propagation on ER Network
 Cascade spreading visualized step-by-step.
 | Step 0 | Step 1 | Step 2 |
 |:--:|:--:|:--:|
-| ![Activation Step 0](test4activationstep0.png) | ![Activation Step 1](test4activationstep1.png) | ![Activation Step 2](test4activationstep2.png) |
+| ![Activation Step 0](output/test4activationstep0.png) | ![Activation Step 1](output/test4activationstep1.png) | ![Activation Step 2](output/test4activationstep2.png) |
 
 ### 📊 Cascade Size Distribution (ER Network)
 Log-log cascade size distributions showing exponential falloff.
-![ER Network Cascade Size Distribution](test4ERnetworkcascadesizedist.png)
+![ER Network Cascade Size Distribution](output/test4ERnetworkcascadesizedist.png)
 
 ### 🌈 Simulation 5 – Cascade Size Distributions for Different p Values
 As infection probability increases, cascades grow larger and more frequent.
-![Cascade Distribution for Different p](test5cascadedistwithdiffpvlues.png)
+![Cascade Distribution for Different p](output/test5cascadedistwithdiffpvlues.png)
 
 ### 🌳 Simulation 6 – Example Cascade Tree (True Cascade)
 Visual representation of one simulated cascade tree (sim_id = 77).
-![Cascade Tree sim_id 77](test6.png)
+![Cascade Tree sim_id 77](output/test6.png)
 
 ---
 
@@ -100,19 +100,19 @@ Visual representation of one simulated cascade tree (sim_id = 77).
 
 ### 🧠 Simulation 7 – Reconstructed Cascade Tree (sim_id = 32)
 A reconstructed tree inferred from activation data using the Goel et al. (2016) heuristic.
-![Reconstructed Cascade Tree sim_id 32](test7simid=32.png)
+![Reconstructed Cascade Tree sim_id 32](output/test7simid=32.png)
 
 ### 📏 True vs Reconstructed Cascade Mean Depth
 Comparison of mean depth distributions showing similar structural patterns.
-![Mean Depth Comparison](test7truevsrcavgdepth.png)
+![Mean Depth Comparison](output/test7truevsrcavgdepth.png)
 
 ### 📉 True vs Reconstructed Cascade Size Distributions (Log-Log)
 Overlay of true and reconstructed cascade sizes confirming statistical similarity.
-![Cascade Size True vs Reconstructed](test7truevsrcdist.png)
+![Cascade Size True vs Reconstructed](output/test7truevsrcdist.png)
 
 ### 🌐 True vs Reconstructed Structural Virality
 Both true and reconstructed cascades show matching virality distributions.
-![Structural Virality True vs Reconstructed](test7truevsrcsv.png)
+![Structural Virality True vs Reconstructed](output/test7truevsrcsv.png)
 
 ---
 
