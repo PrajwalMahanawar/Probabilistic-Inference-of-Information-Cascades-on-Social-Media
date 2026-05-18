@@ -1,145 +1,344 @@
-# 🧠 Probabilistic Inference of Information Cascades on Social Media
+# Probabilistic Inference of Information Cascades on Social Media
 
-**Author:** Prajwal Mahanawar  
-**Institution:** University of Limerick    
-**Degree:** MSc in Data Science and Statistical Learning (2025)  
+![R](https://img.shields.io/badge/R-276DC3?style=for-the-badge&logo=r&logoColor=white)
+![Network Science](https://img.shields.io/badge/Network%20Science-Information%20Diffusion-blueviolet?style=for-the-badge)
+![ICM](https://img.shields.io/badge/Model-Independent%20Cascade%20Model-orange?style=for-the-badge)
+![MSc Thesis](https://img.shields.io/badge/MSc%20Thesis-University%20of%20Limerick-success?style=for-the-badge)
 
----
+## Overview
 
-## 📘 Project Overview
+This repository contains the code, simulation outputs, figures, and preprint material for my MSc thesis project:
 
-This repository contains the source code, simulation outputs, and figures from my MSc thesis:  
-**_Probabilistic Inference of Information Cascades on Social Media_**.
+> **Probabilistic Inference of Information Cascades on Social Media**  
+> **Author:** Prajwal Mahanawar  
+> **Institution:** University of Limerick  
+> **Programme:** MSc Data Science and Statistical Learning
 
-The study investigates how information diffuses through social networks and how to reconstruct hidden propagation paths when only activation times are observed.  
-It combines **forward simulation** using the **Independent Cascade Model (ICM)** on **Erdős–Rényi (ER)** networks and **inverse reconstruction** using **Goel et al. (2016)**’s single-parent heuristic.
+The project studies how information spreads through social networks and how hidden cascade structures can be reconstructed when only activation events or activation times are available. It combines **forward diffusion simulation** using the **Independent Cascade Model (ICM)** with **cascade reconstruction** based on temporal ordering and network-neighbourhood constraints.
 
-The goal is to assess how accurately reconstructed cascades capture the true diffusion structures by comparing metrics such as cascade size, mean depth, and structural virality.
-
----
-
-## 🧩 Objectives
-
-- Simulate diffusion on ER graphs using the Independent Cascade Model (ICM).  
-- Analyse cascade behaviour under varying densities and infection probabilities.  
-- Reconstruct cascade trees using deterministic single-parent heuristics.  
-- Evaluate reconstruction accuracy using:
-  - Cascade size distributions  
-  - Mean and maximum depth  
-  - Structural virality  
+The work is useful for understanding social media diffusion, viral information spread, influence propagation, misinformation cascades, and network-based recommendation systems.
 
 ---
 
-## ⚙️ Methodology
+## Research Problem
 
-### 1️⃣ Network Generation
-- Random networks created using **Erdős–Rényi G(n,p)** model.  
-- Parameters: `n = 500–1000`, `p = 0.01–0.05`.  
-- Ensured average degree `k̄ > 1` to stay above the percolation threshold.
+In many real social platforms, we may observe *when* users become active, share content, or adopt information, but we often do not observe the true parent-child transmission path. This creates an inference problem:
 
-### 2️⃣ Independent Cascade Model (ICM)
-- Each active node gets one chance to activate each neighbour with probability `p_infect`.  
-- Simulated in **R** using `igraph`, `tidyverse`, and `CascadeSimulatoR`.  
-- Monte Carlo experiments produce cascade size and depth distributions.
+> Given a social network and observed activation sequence, can we reconstruct a plausible cascade tree and preserve key structural properties of the original diffusion process?
 
-### 3️⃣ Cascade Reconstruction
-- Adopted **Goel et al. (2016)** method based on **temporal ordering + neighbourhood constraint**.  
-- For each activated node, parent = neighbour active in the previous generation.  
-- Generated reconstructed cascade trees for accuracy comparison.
-
-### 4️⃣ Evaluation Metrics
-
-| Metric | Description |
-|---------|--------------|
-| **Cascade Size** | Number of activated nodes |
-| **Mean/Max Depth** | Distance from root to leaves |
-| **Structural Virality** | Average pairwise node distance (Goel et al., 2016) |
+This project addresses that problem through simulation, reconstruction, and statistical comparison of true and inferred cascades.
 
 ---
 
-## 🧪 Simulations and Results
+## Objectives
 
-### 🧩 Simulation 1 – Possible Activations in a Ring Network
-Illustrates the sequential node activations in a 6-node ring graph.
-![Simulation 1 – Possible Activations](output/test1possibleactivations.png)
+- Simulate information diffusion on small ring networks and larger Erdős–Rényi random graphs.
+- Implement the Independent Cascade Model in R.
+- Run Monte Carlo simulations to study cascade size distributions.
+- Analyse how network density and activation probability influence cascade spread.
+- Generate true cascade trees using `CascadeSimulatoR`.
+- Reconstruct cascade trees from activation order and graph-neighbourhood information.
+- Compare true and reconstructed cascades using size, depth, and structural virality.
 
-### 🕸️ Ring Network Formation
-Base topology used for initial diffusion experiments.
-![Ring Network Formed](output/test1ringnetworkformed.png)
+---
 
-### 📈 Simulation 2 – Cascade Size Distribution (Log-Log Scale)
-Shows exponential decay in cascade size frequencies on the ring network.
-![Cascade Size Distribution](output/test2cascadedist.png)
+## Methodology
 
-### ⏱️ Simulation 3 – Cascade Size Distribution (max_steps = 2000)
-Longer simulations smoothen heavy-tailed distribution trends.
+### 1. Network Generation
+
+The experiments use two types of networks:
+
+- **Ring network** for simple step-by-step diffusion visualisation.
+- **Erdős–Rényi random graph** using `sample_gnp(n, p)` from `igraph` for larger stochastic simulations.
+
+### 2. Independent Cascade Model
+
+The Independent Cascade Model assumes that once a node becomes active, it gets one chance to activate each inactive neighbour with probability `p`.
+
+The implementation tracks:
+
+- active and inactive nodes,
+- newly activated nodes at each time step,
+- activation history,
+- final cascade size.
+
+### 3. Monte Carlo Simulation
+
+Multiple simulations are run to estimate cascade behaviour under stochastic diffusion. The main output is the cascade size distribution, often shown on a log-log scale.
+
+### 4. Cascade Reconstruction
+
+The reconstruction stage infers parent-child edges using:
+
+- activation generation/time,
+- network adjacency,
+- candidate parents active in the previous generation,
+- deterministic parent selection from valid neighbours.
+
+This produces a reconstructed directed cascade tree that can be compared against the simulated true cascade.
+
+### 5. Evaluation
+
+The project compares true and reconstructed cascades using:
+
+| Metric | Meaning |
+|---|---|
+| Cascade Size | Number of activated nodes in a cascade |
+| Mean Depth | Average distance from root to activated nodes |
+| Maximum Depth | Longest propagation path from the seed |
+| Structural Virality | Average pairwise distance between nodes in a cascade tree |
+
+---
+
+## Repository Structure
+
+```text
+.
+├── Test codes/
+│   ├── test1ringnetwork.R
+│   ├── test2montecarlo on ring.R
+│   ├── test3montecarlo on ring with maxstepsize.R
+│   ├── test4ERnetworksimulation.R
+│   ├── test5ERnetworkwithdiff p values.R
+│   ├── test6cascadesimpackage.R
+│   ├── test7part1.R
+│   ├── test7part2.R
+│   ├── test7part3.R
+│   └── test7reconstructcascade.R
+│
+├── output/
+│   ├── test1possibleactivations.png
+│   ├── test1ringnetworkformed.png
+│   ├── test2cascadedist.png
+│   ├── test3cascadedistwithmaxstepsize.png
+│   ├── test4ERnetworkcascadesizedist.png
+│   ├── test4activationstep0.png
+│   ├── test4activationstep1.png
+│   ├── test4activationstep2.png
+│   ├── test5cascadedistwithdiffpvlues.png
+│   ├── test6.png
+│   ├── test6cascadesimtree7.png
+│   ├── test6cascadesimtree77.png
+│   ├── test6cascadetree25.png
+│   ├── test7simid=32.png
+│   ├── test7truevsrcavgdepth.png
+│   ├── test7truevsrcdist.png
+│   └── test7truevsrcsv.png
+│
+├── paper/
+│   ├── arxiv.sty
+│   ├── preprint.pdf
+│   ├── references.bib
+│   └── template.tex
+│
+├── requirements.txt
+├── LICENSE.text
+└── README.md
+```
+
+---
+
+## Key Scripts
+
+| Script | Purpose |
+|---|---|
+| `test1ringnetwork.R` | Builds a 6-node ring network and visualises possible activations. |
+| `test2montecarlo on ring.R` | Runs Monte Carlo diffusion experiments on a ring graph. |
+| `test3montecarlo on ring with maxstepsize.R` | Extends Monte Carlo simulation with a maximum step limit. |
+| `test4ERnetworksimulation.R` | Simulates ICM on Erdős–Rényi networks and plots cascade size distributions. |
+| `test5ERnetworkwithdiff p values.R` | Compares cascade distributions under different activation probabilities. |
+| `test6cascadesimpackage.R` | Uses `CascadeSimulatoR` to generate cascade trees. |
+| `test7reconstructcascade.R` | Reconstructs cascade trees from activation generations and network structure. |
+
+---
+
+## Results and Visualisations
+
+### Ring Network Diffusion
+
+The first experiment shows how a cascade spreads through a simple ring network.
+
+![Possible Activations](output/test1possibleactivations.png)
+
+![Ring Network](output/test1ringnetworkformed.png)
+
+### Cascade Size Distributions
+
+Monte Carlo experiments show how often different cascade sizes occur.
+
+![Ring Cascade Distribution](output/test2cascadedist.png)
+
 ![Cascade Distribution with Max Steps](output/test3cascadedistwithmaxstepsize.png)
 
-### 🔴 Simulation 4 – Cascade Propagation on ER Network
-Cascade spreading visualized step-by-step.
-| Step 0 | Step 1 | Step 2 |
-|:--:|:--:|:--:|
-| ![Activation Step 0](output/test4activationstep0.png) | ![Activation Step 1](output/test4activationstep1.png) | ![Activation Step 2](output/test4activationstep2.png) |
+### Erdős–Rényi Network Simulation
 
-### 📊 Cascade Size Distribution (ER Network)
-Log-log cascade size distributions showing exponential falloff.
-![ER Network Cascade Size Distribution](output/test4ERnetworkcascadesizedist.png)
+The project then moves from toy ring networks to larger Erdős–Rényi random graphs.
 
-### 🌈 Simulation 5 – Cascade Size Distributions for Different p Values
-As infection probability increases, cascades grow larger and more frequent.
-![Cascade Distribution for Different p](output/test5cascadedistwithdiffpvlues.png)
+![ER Cascade Size Distribution](output/test4ERnetworkcascadesizedist.png)
 
-### 🌳 Simulation 6 – Example Cascade Tree (True Cascade)
-Visual representation of one simulated cascade tree (sim_id = 77).
-![Cascade Tree sim_id 77](output/test6.png)
+Example activation steps:
 
----
+<p align="center">
+  <img src="output/test4activationstep0.png" width="30%" />
+  <img src="output/test4activationstep1.png" width="30%" />
+  <img src="output/test4activationstep2.png" width="30%" />
+</p>
 
-## 🔁 Reconstruction Experiments
+### Effect of Different Activation Probabilities
 
-### 🧠 Simulation 7 – Reconstructed Cascade Tree (sim_id = 32)
-A reconstructed tree inferred from activation data using the Goel et al. (2016) heuristic.
-![Reconstructed Cascade Tree sim_id 32](output/test7simid=32.png)
+Increasing activation probability changes cascade size behaviour and makes larger cascades more likely.
 
-### 📏 True vs Reconstructed Cascade Mean Depth
-Comparison of mean depth distributions showing similar structural patterns.
-![Mean Depth Comparison](output/test7truevsrcavgdepth.png)
+![Different P Values](output/test5cascadedistwithdiffpvlues.png)
 
-### 📉 True vs Reconstructed Cascade Size Distributions (Log-Log)
-Overlay of true and reconstructed cascade sizes confirming statistical similarity.
-![Cascade Size True vs Reconstructed](output/test7truevsrcdist.png)
+### Cascade Trees
 
-### 🌐 True vs Reconstructed Structural Virality
-Both true and reconstructed cascades show matching virality distributions.
-![Structural Virality True vs Reconstructed](output/test7truevsrcsv.png)
+True cascade trees are generated and visualised using the cascade simulation package.
 
----
+![Cascade Tree](output/test6cascadesimtree77.png)
 
-## 🧠 Key Findings
+### Reconstruction Results
 
-- **Most cascades remain small and shallow**, consistent with subcritical spreading.  
-- **Structural virality** values cluster near broadcast-like diffusion (low average pairwise distance).  
-- **Reconstructed cascades** preserve the overall size and depth distributions and approximate virality trends accurately.  
-- The **Goel et al. (2016)** heuristic proves to be a strong baseline for deterministic cascade inference.
+The reconstruction experiment infers cascade trees from activation data.
+
+![Reconstructed Cascade](output/test7simid=32.png)
+
+True and reconstructed cascades are compared using depth, size distribution, and structural virality.
+
+![Average Depth Comparison](output/test7truevsrcavgdepth.png)
+
+![Cascade Distribution Comparison](output/test7truevsrcdist.png)
+
+![Structural Virality Comparison](output/test7truevsrcsv.png)
 
 ---
 
-## 🧰 Tech Stack
+## Key Findings
 
-- **Language:** R  
-- **Libraries:** `igraph`, `ggplot2`, `tseries`, `zoo`, `CascadeSimulatoR`, `tidyverse`  
-- **Data:** Synthetic ER networks and simulated activation sequences  
-- **Visualization:** `ggplot2` (log-log plots, depth histograms, virality overlays)
+- Most simulated cascades remain small, which is consistent with subcritical or weakly spreading diffusion settings.
+- Higher activation probability increases the likelihood of larger cascades.
+- Erdős–Rényi network density and infection probability strongly influence cascade reach.
+- Reconstructed cascades can preserve important distributional properties of the original cascades.
+- Temporal-ordering and neighbourhood-based reconstruction provides a useful baseline for cascade inference when direct transmission paths are unavailable.
 
 ---
 
-## 🚀 How to Run
+## Tech Stack
+
+### Main Tools
+
+- **R**
+- **igraph**
+- **tidyverse**
+- **ggplot2**
+- **CascadeSimulatoR**
+- **cowplot**
+
+### Additional Python Requirements
+
+The repository also contains a `requirements.txt` file with:
+
+```text
+networkx
+numpy
+pandas
+matplotlib
+scipy
+```
+
+These are useful if extending the project into Python-based graph analysis or cascade modelling.
+
+---
+
+## How to Run
+
+### 1. Clone the Repository
 
 ```bash
-# Clone repository
-git clone https://github.com/<your-username>/probabilistic-cascade-inference.git
-cd probabilistic-cascade-inference
+git clone https://github.com/PrajwalMahanawar/Probabilistic-Inference-of-Information-Cascades-on-Social-Media.git
+cd Probabilistic-Inference-of-Information-Cascades-on-Social-Media
+```
 
-# Run simulations
-Rscript simulate_icm.R
-Rscript reconstruct_cascade.R
+### 2. Install R Packages
+
+Open R or RStudio and run:
+
+```r
+install.packages(c("igraph", "tidyverse", "ggplot2", "cowplot"))
+
+# If CascadeSimulatoR is not available directly from CRAN in your environment,
+# install it using the method recommended by its package documentation.
+install.packages("CascadeSimulatoR")
+```
+
+### 3. Run Individual Experiments
+
+Because the scripts are organised as thesis experiments, run them individually:
+
+```bash
+Rscript "Test codes/test1ringnetwork.R"
+Rscript "Test codes/test4ERnetworksimulation.R"
+Rscript "Test codes/test7reconstructcascade.R"
+```
+
+For filenames with spaces, keep the quotation marks.
+
+---
+
+## Academic Context
+
+This project was developed as part of an MSc thesis in Data Science and Statistical Learning at the University of Limerick. It connects ideas from:
+
+- network science,
+- probabilistic diffusion modelling,
+- information cascade analysis,
+- graph-based inference,
+- social media propagation,
+- cascade reconstruction.
+
+The `paper/` directory contains preprint-related material, including LaTeX files, references, and a compiled PDF.
+
+---
+
+## Possible Extensions
+
+Future work can extend this project by:
+
+- testing reconstruction on real social media datasets,
+- comparing ICM with Linear Threshold and Hawkes Process models,
+- adding machine learning-based cascade prediction,
+- using temporal point processes for activation-time modelling,
+- applying cascade-aware features to recommender systems,
+- evaluating reconstruction accuracy with edge-level precision and recall.
+
+---
+
+## Citation
+
+If you use this repository or build on this work, please cite it as:
+
+```bibtex
+@misc{mahanawar2025cascades,
+  author       = {Prajwal Mahanawar},
+  title        = {Probabilistic Inference of Information Cascades on Social Media},
+  year         = {2025},
+  institution  = {University of Limerick},
+  note         = {MSc Thesis Project},
+  url          = {https://github.com/PrajwalMahanawar/Probabilistic-Inference-of-Information-Cascades-on-Social-Media}
+}
+```
+
+---
+
+## Author
+
+**Prajwal Mahanawar**  
+MSc Data Science and Statistical Learning  
+University of Limerick
+
+GitHub: [PrajwalMahanawar](https://github.com/PrajwalMahanawar)
+
+---
+
+## License
+
+This project is provided for academic and research purposes. See `LICENSE.text` for license details.
